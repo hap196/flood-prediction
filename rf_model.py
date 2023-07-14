@@ -20,8 +20,12 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
+# Prepare and Standardize Predictions
 df_pred = pd.read_csv('predictions_no_null.csv')
 predict = df_pred[['ndvi', 'nwdi', 'distancefromriver', 'geology','slope', 'soils', 'soils', 'tri', 'aspect', 'dem']]
+
+predict = scaler.fit_transform(predict)
+#print(predict[0])
 
 # Define the models and the hyperparameters to tune
 models = [
@@ -39,12 +43,15 @@ for m in models:
     print(classification_report(y_test, y_pred))
 
     y_pred1 = model.predict(predict)
+    print(y_pred1[0])
 
     prob_list = []
     # Print the probabilities for the positive class
+
     #y_proba = model.predict_proba(X_test)
     y_proba = model.predict_proba(predict)
-   # print("\nProbabilities for the positive class (flood):")
+
+    print("\nProbabilities for the positive class (flood):")
     for i, prob in enumerate(y_proba):
         prob_list.append(f"{prob[1]:.2f}")
        # print(f"Sample {i}: P(flood) = {prob[1]:.2f}")
