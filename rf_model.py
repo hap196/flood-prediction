@@ -1,15 +1,19 @@
 import pandas as pd
+import lime
+import lime.lime_tabular
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
+
+
 
 # Load the data
 df = pd.read_csv('jojo.csv')
 df = df.dropna()
 
 # Define the features and the target
-X = df[['ndvi', 'nwdi', 'distancefromriver', 'geology','slope', 'soils', 'soils', 'tri', 'aspect', 'dem']]
+X = df[['ndvi', 'nwdi', 'distancefromriver', 'geology','slope', 'soils', 'tri', 'aspect', 'dem']]
 y = df['flood']
 
 # Split the data into train and test sets
@@ -22,7 +26,7 @@ X_test = scaler.transform(X_test)
 
 # Prepare and Standardize Predictions
 df_pred = pd.read_csv('predictions_no_null.csv')
-predict = df_pred[['ndvi', 'nwdi', 'distancefromriver', 'geology','slope', 'soils', 'soils', 'tri', 'aspect', 'dem']]
+predict = df_pred[['ndvi', 'nwdi', 'distancefromriver', 'geology','slope', 'soils', 'tri', 'aspect', 'dem']]
 
 predict = scaler.fit_transform(predict)
 #print(predict[0])
@@ -31,6 +35,8 @@ predict = scaler.fit_transform(predict)
 models = [
     {"name": "RandomForestClassifier", "model": RandomForestClassifier(), "params": {"n_estimators": [50, 100, 150], "max_depth": [None, 5, 10]}},
 ]
+
+
 
 # Train each model, print the classification report, and the probabilities for the positive class
 for m in models:
@@ -60,3 +66,13 @@ for m in models:
     predictions = {'predictions': prob_list}
     df = pd.DataFrame(predictions)
     df.to_csv('all_predictions.csv', index=False)
+
+
+predict_fn_rf = lambda x: model.predict_proba(x).astype(float)
+X = X_train
+
+feature_names = ['ndvi', 'nwdi', 'distancefromriver', 'geology', 'slope', 'soils', 'tri', 'aspect', 'dem']
+explainer = lime.lime_tabular.LimeTabularExplainer(X, feature_names = feature_names, class_names=['No flood', 'Flood'], kernel_width=5)
+
+chosen_instance = predict[0]
+exp = explainer.explain_instance(chosen_instance, predict_fn_rf, num_features=5)
