@@ -72,7 +72,29 @@ predict_fn_rf = lambda x: model.predict_proba(x).astype(float)
 X = X_train
 
 feature_names = ['ndvi', 'nwdi', 'distancefromriver', 'geology', 'slope', 'soils', 'tri', 'aspect', 'dem']
-explainer = lime.lime_tabular.LimeTabularExplainer(X, feature_names = feature_names, class_names=['No flood', 'Flood'], kernel_width=5)
+# explainer = lime.lime_tabular.LimeTabularExplainer(X, feature_names = feature_names, class_names=['No flood', 'Flood'], kernel_width=5)
 
-chosen_instance = predict[0]
-exp = explainer.explain_instance(chosen_instance, predict_fn_rf, num_features=5)
+# chosen_instance = scaler.transform([predict[0]])[0]
+# exp = explainer.explain_instance(chosen_instance, predict_fn_rf, num_features=5)
+# exp.save_to_file('explanation.html')
+explainer = lime.lime_tabular.LimeTabularExplainer(X_train, feature_names = feature_names, class_names=['No flood', 'Flood'], kernel_width=5)
+
+explanations = []
+for i, instance in enumerate(predict):
+    print(i)
+    # if i >= 100:  # stop after 100 explanations
+    #     break
+    # chosen_instance = instance
+    # exp = explainer.explain_instance(chosen_instance, predict_fn_rf, num_features=5)
+
+    # explanations.append({
+    #     'instance_index': i,
+    #     'explanation': exp.as_list(),
+    #     'explanation_map': exp.as_map()
+    # })
+
+# You can analyze this data however you like, e.g. with pandas
+
+# df_explanations = pd.DataFrame(explanations)
+
+# df_explanations.to_csv('explanations.csv', index=False)
